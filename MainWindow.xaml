@@ -1,0 +1,19 @@
+﻿<Window x:Class="ExperimentFileFinder.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ExperimentFileFinder"
+        mc:Ignorable="d"
+        Title="ExperimentFileFinder" Height="500" Width="600" WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Button x:Name="button1" Content="Нажать" FontSize="13" Width="80" Height="30"
+                Click="Button_Click" Margin="260,363,260,91"   />
+        <Label x:Name="LabelDriveSelect" Content="Диск для поиска" HorizontalAlignment="Left" Margin="30,29,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="LabelSearchPath" Content="Путь для поиска:" HorizontalAlignment="Left" Margin="30,76,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="LabelFileName" Content="Полное имя файла, часть имени файла или часть пути, содержащего файл:" HorizontalAlignment="Left" Margin="30,124,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="LabelFoundFilesList" Content="Список найденных файлов:" HorizontalAlignment="Left" Margin="30,170,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="LabelProgress" Content="Прогресс:" HorizontalAlignment="Left" Margin="30,224,0,0" VerticalAlignment="Top"/>
+        <Label x:Name="LabelFilesCount" Content="0" HorizontalAlignment="Left" Margin="30,277,0,0" VerticalAlignment="Top"/>
+    </Grid>
+</Window>
