@@ -6,52 +6,39 @@
         xmlns:local="clr-namespace:ExperimentFileFinder"
         xmlns:sys="clr-namespace:System;assembly=mscorlib"
         xmlns:my="clr-namespace:System.ComponentModel;assembly=System"
+        xmlns:ma="clr-namespace:System.ComponentModel;assembly=System"
         mc:Ignorable="d"
-        Title="ExperimentFileFinder" Height="600" Width="810" WindowStartupLocation="CenterScreen">
-    <Window.Resources>
-        <my:BackgroundWorker
-            x:Key="backgroundWorker"
-            WorkerReportsProgress="True"
-            WorkerSupportsCancellation="True"
-            DoWork="BackgroundWorkerEstimateSearchTime_DoWork"
-            ProgressChanged="BackgroundWorkerEstimateSearchTime_ProgressChanged"
-            RunWorkerCompleted="BackgroundWorkerEstimateSearchTime_RunWorkerCompleted"
-      >
-        </my:BackgroundWorker>
-    </Window.Resources>
+        Title="ExperimentFileFinder" Height="600" Width="810" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize">
     <Grid>
         <Label x:Name="LabelDriveSelect" Content="Диск для поиска:" HorizontalAlignment="Left" Margin="10,7,0,0" VerticalAlignment="Top"/>
         <Label x:Name="LabelSearchPath" Content="Путь для поиска:" HorizontalAlignment="Left" Margin="11,45,0,0" VerticalAlignment="Top"/>
         <Label x:Name="LabelFileName" Content="Полное имя файла, часть имени файла или часть пути, содержащего файл:" HorizontalAlignment="Left" Margin="10,108,0,0" VerticalAlignment="Top"/>
         <Label x:Name="LabelFoundFilesList" Content="Список найденных файлов:" HorizontalAlignment="Left" Margin="10,206,0,0" VerticalAlignment="Top"/>
         <Label x:Name="LabelProgress" Content="Прогресс:" HorizontalAlignment="Left" Margin="10,514,0,0" VerticalAlignment="Top"/>
-        <Label x:Name="LabelFilesCount" Content="0" HorizontalAlignment="Left" Margin="440,514,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.892,-3.453"/>
-        <ComboBox x:Name="ComboBoxDrives" HorizontalAlignment="Left" Margin="123,11,0,0" VerticalAlignment="Top" Width="666"/>
+        <Label x:Name="LabelFilesCount" Content="0" HorizontalAlignment="Left" Margin="552,514,0,0" VerticalAlignment="Top"/>
+        <ComboBox x:Name="ComboBoxDrives" SelectionChanged="ComboBoxDrives_SelectedIndexChanged" HorizontalAlignment="Left" Margin="123,11,0,0" VerticalAlignment="Top" Width="666"/>
         <TextBox x:Name="TextBoxSearchPath" HorizontalAlignment="Left" Margin="10,75,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="691"/>
-        <TextBox x:Name="TextBoxFileName" HorizontalAlignment="Left" Margin="10,139,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="691"/>
-        <Button x:Name="ButtonSelectSearchDirectory" Click ="ButtonSelectSearchDirectory_Click" Content="Обзор файлов" HorizontalAlignment="Left" Margin="706,73,0,0" VerticalAlignment="Top" Height="20">
+        <TextBox x:Name="TextBoxFileName" TextChanged="TextBoxFileName_TextChanged" HorizontalAlignment="Left" Margin="10,139,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="691"/>
+        <Button x:Name="ButtonSelectSearchDirectory" Click ="ButtonSelectSearchDirectory_Click" Content="Обзор" HorizontalAlignment="Left" Margin="706,73,0,0" VerticalAlignment="Top" Width ="83" Height="20">
             <Button.ToolTip>
                 <ToolTip>
                     Выберите директорию, в которой будет производиться поиск файлов
                 </ToolTip>
             </Button.ToolTip>
         </Button>
-        <Button x:Name="ButtonStartSearch" Click="ButtonStartSearch_Click" Content="Начать поиск" HorizontalAlignment="Left" Margin="706,138,0,0" VerticalAlignment="Top"  Width="83" IsDefault="True" Height="20">
+        <Button x:Name="ButtonStartSearch" Click="ButtonStartSearch_Click" Content="Начать поиск" IsEnabled="False" HorizontalAlignment="Left" Margin="706,138,0,0" VerticalAlignment="Top"  Width="83" IsDefault="True" Height="20">
             <Button.ToolTip>
                 <ToolTip>
                     Нажмите для начала поиска или остановки поиска файлов
                 </ToolTip>
             </Button.ToolTip>
         </Button>
-        <ListView x:Name="ListViewFoundFiles" d:ItemsSource="{d:SampleData ItemCount=5}" Margin="7,242,7,70">
-            <ListView.GroupStyle>
-                <GroupStyle x:Name="listViewGroupFiles" HeaderStringFormat="Найденные файлы"/>
-            </ListView.GroupStyle>
+        <ListView x:Name="ListViewFoundFiles" MouseDoubleClick="ListViewFoundFiles_DoubleClick" Margin="7,242,7,70">
             <ListView.View>
                 <GridView>
                     <GridViewColumn x:Name="columnHeaderFileName" Header="Имя файла" DisplayMemberBinding="{Binding FileName}" Width="400"/>
-                    <GridViewColumn x:Name="columnHeaderFileDate" Header="Дата создания/изменения файла" DisplayMemberBinding="{Binding Date}" Width="200"/>
-                    <GridViewColumn x:Name="columnHeaderFileSize" Header="Размер файла, байт" DisplayMemberBinding="{Binding Size}" Width="180"/>
+                    <GridViewColumn x:Name="columnHeaderFileDate" Header="Дата создания/изменения файла" DisplayMemberBinding="{Binding FileCreateDate}" Width="240"/>
+                    <GridViewColumn x:Name="columnHeaderFileSize" Header="Размер файла, байт" DisplayMemberBinding="{Binding FileSizeInBytes}" Width="140"/>
                 </GridView>
             </ListView.View>
         </ListView>

@@ -1,5 +1,7 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Windows;
@@ -21,6 +23,7 @@ namespace ExperimentFileFinder
     /// </summary>
     public partial class MainWindow : Window
     {
+        
         private BackgroundWorker BackgroundWorkerEstimateSearchTime;
         private BackgroundWorker BackgroundWorkerSearchFiles;
 
@@ -38,6 +41,22 @@ namespace ExperimentFileFinder
         {
             InitializeComponent();
             MainWindowLoad();
+
+            BackgroundWorkerEstimateSearchTime = new BackgroundWorker();
+            BackgroundWorkerEstimateSearchTime.DoWork += BackgroundWorkerEstimateSearchTime_DoWork;
+            BackgroundWorkerEstimateSearchTime.ProgressChanged += BackgroundWorkerEstimateSearchTime_ProgressChanged;
+            BackgroundWorkerEstimateSearchTime.RunWorkerCompleted += BackgroundWorkerEstimateSearchTime_RunWorkerCompleted;
+            BackgroundWorkerEstimateSearchTime.WorkerReportsProgress = true;
+            BackgroundWorkerEstimateSearchTime.WorkerSupportsCancellation = true;
+
+            BackgroundWorkerSearchFiles = new BackgroundWorker();
+            BackgroundWorkerSearchFiles.DoWork += BackgroundWorkerSearchFiles_DoWork;
+            BackgroundWorkerSearchFiles.ProgressChanged += BackgroundWorkerSearchFiles_ProgressChanged;
+            BackgroundWorkerSearchFiles.RunWorkerCompleted += BackgroundWorkerSearchFiles_RunWorkerCompleted;
+            BackgroundWorkerSearchFiles.WorkerReportsProgress = true;
+            BackgroundWorkerSearchFiles.WorkerSupportsCancellation = true;
+
+
         }
 
         private void MainWindowLoad()
@@ -180,7 +199,7 @@ namespace ExperimentFileFinder
 
                     foreach (string file in files)
                     {
-                        if (file.Contains(fileInfoHolder.FileNameMask))
+                        if (file.ToLower().Contains(fileInfoHolder.FileNameMask.ToLower()) || file.ToUpper().Contains(fileInfoHolder.FileNameMask.ToUpper())) 
                         {
                             fileInfoHolder.FoundFiles.Add(file);
                             FileSearchInfoHolder.FilesFound++;
@@ -205,15 +224,27 @@ namespace ExperimentFileFinder
             }
             catch (UnauthorizedAccessException unauthorizedAccessException)
             {
-                // TODO: обработать исключение при необходимости...
+                MessageBox.Show($"Доступ к файлу или каталогу запрещен: {unauthorizedAccessException.Message}",
+                                "Ошибка доступа",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error
+                );
             }
             catch (DirectoryNotFoundException directoryNotFoundException)
             {
-                // TODO: обработать исключение при необходимости...
+                MessageBox.Show($"Указанный каталог не найден: {directoryNotFoundException.Message}",
+                                "Ошибка",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error
+                );
             }
             catch (Exception otherException)
             {
-                // TODO: обработать исключение при необходимости...
+                MessageBox.Show($"Произошла непредвиденная ошибка: {otherException.Message}",
+                                "Ошибка",
+                                MessageBoxButton.OK,
+                                MessageBoxImage.Error
+                );
             }
         }
 
@@ -316,17 +347,28 @@ namespace ExperimentFileFinder
             foreach (string fileName in foundFiles)
             {
                 long fileSizeInBytes = -1;
+                DateTime fileCreationDate = DateTime.Now;
+                DateTime fileModificationDate = DateTime.Now;
                 try
                 {
                     FileInfo fileInfo = new FileInfo(fileName);
+                    fileCreationDate = fileInfo.CreationTime;
+                    fileModificationDate = fileInfo.LastWriteTime;
                     fileSizeInBytes = fileInfo.Length;
                 }
                 catch (FileNotFoundException fileNotFoundException)
                 {
-                    //TODO: обработать исключение при необходимости...
+                    // Сообщение пользователю
+                    MessageBox.Show($"Файл не найден: {fileNotFoundException.FileName}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
-                ListViewItem value = new ListViewItem() {Content = new string[] { fileName, fileSizeInBytes.ToString() } };
-                //ListViewItem value = new ListViewItem(new string[] { fileName, fileSizeInBytes.ToString() }, 0, group);
+
+                FileData value = new FileData
+                {
+                    FileName = fileName,
+                    FileCreateDate = fileCreationDate.ToString() + "/" + fileModificationDate,
+                    FileSizeInBytes = fileSizeInBytes.ToString()
+                };
+
                 ListViewFoundFiles.Items.Add(value);
             }
 
@@ -339,7 +381,7 @@ namespace ExperimentFileFinder
         */
         private void TextBoxFileName_TextChanged(object sender, EventArgs e)
         {
-            ButtonStartSearch.IsEnabled = !"".Equals(TextBoxFileName.Text.Trim());
+            ButtonStartSearch.IsEnabled = !string.IsNullOrWhiteSpace(TextBoxFileName.Text);
         }
 
         // Обработка нажатия на кнопку "Начать поиск" / "Прервать"
@@ -367,9 +409,8 @@ namespace ExperimentFileFinder
                 // Поиск не запущен - запустить оценку времени поиска или сам поиск
                 FileSearchInfoHolder.FileNameMask = TextBoxFileName.Text;
                 ProgressBarMain.Value = 0;
-                //ListViewFoundFiles.GroupStyle.Clear();
-                //ListViewFoundFiles.GroupStyle.Add(new ListViewGroup("listViewGroupFiles", "Найденные файлы"));
-
+                ListViewFoundFiles.Items.Clear();
+              
                 FileSearchInfoHolder.FoundFiles.Clear();
 
                 ProgressBarMain.Visibility = Visibility.Visible;
@@ -381,7 +422,6 @@ namespace ExperimentFileFinder
                     LabelProgress.Visibility = Visibility.Visible;
                     LabelFilesCount.Visibility = Visibility.Visible;
                     SetIsSearchRunningAndUpdateButtonState(true);
-                    MessageBox.Show($"zx{FileSearchInfoHolder.SearchDirectory}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                     BackgroundWorkerEstimateSearchTime.RunWorkerAsync(FileSearchInfoHolder);
                 }
                 else
@@ -412,11 +452,10 @@ namespace ExperimentFileFinder
         /// которая сможет открыть файл
         private void ListViewFoundFiles_DoubleClick(object sender, EventArgs e)
         {
-            var selectedItems = ListViewFoundFiles.SelectedItems;
-            if (selectedItems.Count > 0)
+            if (ListViewFoundFiles.SelectedItem is FileData selectedItem)
             {
-                string selectedItem = selectedItems[0].ToString();
-                StartSelectedFile(selectedItem);
+                string filePath = selectedItem.FileName;
+                StartSelectedFile(filePath); 
             }
         }
 
@@ -431,7 +470,6 @@ namespace ExperimentFileFinder
                 UpdateSearchPathTextBox(selectedPath);
             }
         }
-
     }
 
     /// <summary>
@@ -445,5 +483,15 @@ namespace ExperimentFileFinder
         public long FilesFound { get; set; } = 0;
         public string FileNameMask { get; set; } = "";
         public List<string> FoundFiles = new List<string>();
+    }
+
+    /// <summary>
+    /// Класс для вывода найденных файлов в ListView. 
+    /// </summary>
+    public class FileData
+    {
+        public string FileName { get; set; }
+        public string FileCreateDate { get; set; }
+        public string FileSizeInBytes { get; set; }
     }
 }
